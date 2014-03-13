@@ -1,25 +1,90 @@
-<project name="NS Service Manager" basedir="." default="recycle.ns-service-manager-jar">	
+<project name="NetSuite Service Manager" basedir="." default="recycle.ns-service-manager-jar">	
 	
-	<path id="retroguard.classpath">
-		<fileset dir="." includes="retroguard.jar"/>
-	</path>
-	
-	<taskdef name="RetroGuardTask" classpathref="retroguard.classpath" classname="COM.rl.ant.RetroGuardTask"/> 
-
-	<!-- Build Axon -->
+	<!-- Build Service Manager Jar -->
 	<property name="client-jar.file" location="lib/ns-service-manager.jar"/>
 	
-	<target name="recycle.ns-service-manager-jar" description="Generates Obfuscated NS Service Manager Jar">
+	<target name="recycle.ns-service-manager-jar" depends="recycle.nsws-client-jar" description="Generates Obfuscated NetSuite Service Manager Jar">
 		<echo message="****************************"/>
 		<echo message=" Rebuilding ${client-jar.file}"/>
 		<echo message="****************************"/>
-		<jar destfile="temp.jar" basedir="build"/>
-		<RetroGuardTask
-    		infile="temp.jar" 
-	      	outfile="${client-jar.file}" 
-	      	rgsfile="obfuscate.rgs" 
-	      	logfile="retroguard.log"/>
-		<delete file="temp.jar" failonerror="false"/>
+		<jar destfile="${client-jar.file}" basedir="build"/>
 	</target>
 	
+	<!-- Build NSWS JAR -->
+	<property name="nsws-client-wsdl.ver" value="2012_1"/>
+	<property name="nsws-client-wsdl.minorver" value="2012_1_0"/>
+	<property name="wsdl.url" value="wsdl/WSDL_v2012_1_0/netsuite.wsdl"/>
+	<property name="nsws-clientbld.dir" location="nsws-client-build"/>
+	<property name="nsws-client-jar.file" location="lib/nsws.jar"/>
+	<path id="nsws-client.classpath">
+		<fileset dir="lib" includes="*.jar" excludes="nsws.jar"/>
+	</path>
+	<taskdef resource="axis-tasks.properties" classpathref="nsws-client.classpath"/>
+	<target name="recycle.nsws-client-jar" depends="clean.nsws-client-bld" description="(re)generates WS Client Jar (nsws.jar)">
+		<echo message="****************************"/>
+		<echo message=" Rebuilding ${nsws-client-jar.file}"/>
+		<echo message="****************************"/>
+		<echo message="generating source at ${nsws-clientbld.dir}/src"/>
+		<delete dir="${nsws-clientbld.dir}/src" failonerror="false"/>
+		<mkdir dir="${nsws-clientbld.dir}/src"/>
+		<axis-wsdl2java output="${nsws-clientbld.dir}/src" verbose="true" url="${wsdl.url}" all="true" wraparrays="true" timeout="-1">
+			<mapping namespace="urn:platform_${nsws-client-wsdl.ver}.webservices.netsuite.com" package="com.netsuite.webservices.platform"/>
+			<mapping namespace="urn:messages_${nsws-client-wsdl.ver}.platform.webservices.netsuite.com" package="com.netsuite.webservices.platform.messages"/>
+			<mapping namespace="urn:common_${nsws-client-wsdl.ver}.platform.webservices.netsuite.com" package="com.netsuite.webservices.platform.common"/>
+			<mapping namespace="urn:types.common_${nsws-client-wsdl.ver}.platform.webservices.netsuite.com" package="com.netsuite.webservices.platform.common.types"/>
+			<mapping namespace="urn:faults_${nsws-client-wsdl.ver}.platform.webservices.netsuite.com" package="com.netsuite.webservices.platform.faults"/>
+			<mapping namespace="urn:types.faults_${nsws-client-wsdl.ver}.platform.webservices.netsuite.com" package="com.netsuite.webservices.platform.faults.types"/>
+			<mapping namespace="urn:core_${nsws-client-wsdl.ver}.platform.webservices.netsuite.com" package="com.netsuite.webservices.platform.core"/>
+			<mapping namespace="urn:types.core_${nsws-client-wsdl.ver}.platform.webservices.netsuite.com" package="com.netsuite.webservices.platform.core.types"/>
+			<mapping namespace="urn:relationships_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.relationships"/>
+			<mapping namespace="urn:types.relationships_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.relationships.types"/>
+			<mapping namespace="urn:lists.webservices.netsuite.com" package="com.netsuite.webservices.lists"/>
+			<mapping namespace="urn:scheduling_${nsws-client-wsdl.ver}.activities.webservices.netsuite.com" package="com.netsuite.webservices.activities.scheduling"/>
+			<mapping namespace="urn:types.scheduling_${nsws-client-wsdl.ver}.activities.webservices.netsuite.com" package="com.netsuite.webservices.activities.scheduling.types"/>
+			<mapping namespace="urn:communication_${nsws-client-wsdl.ver}.general.webservices.netsuite.com" package="com.netsuite.webservices.general.communication"/>
+			<mapping namespace="urn:types.communication_${nsws-client-wsdl.ver}.general.webservices.netsuite.com" package="com.netsuite.webservices.general.communication.types"/>
+			<mapping namespace="urn:support_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.support"/>
+			<mapping namespace="urn:types.support_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.support.types"/>
+            <mapping namespace="urn:website_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.website"/>
+			<mapping namespace="urn:marketing_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.marketing"/>
+			<mapping namespace="urn:types.marketing_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.marketing.types"/>
+			<mapping namespace="urn:types.website_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.website.types"/>            
+			<mapping namespace="urn:employees_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.employees"/>
+			<mapping namespace="urn:customers_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.customers"/>
+            <mapping namespace="urn:types.customers_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.customers.types"/>
+            <mapping namespace="urn:purchases_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.purchases"/>
+            <mapping namespace="urn:types.purchases_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.purchases.types"/>
+            <mapping namespace="urn:transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions"/>
+			<mapping namespace="urn:sales_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.sales"/>
+			<mapping namespace="urn:types.sales_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.sales.types"/>
+			<mapping namespace="urn:bank_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.bank"/>
+			<mapping namespace="urn:types.bank_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.bank.types"/>
+			<mapping namespace="urn:general_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.general"/>
+			<mapping namespace="urn:types.general_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.general.types"/>
+			<mapping namespace="urn:inventory_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.inventory"/>
+			<mapping namespace="urn:types.inventory_${nsws-client-wsdl.ver}.transactions.webservices.netsuite.com" package="com.netsuite.webservices.transactions.inventory.types"/>
+			<mapping namespace="urn:customization_${nsws-client-wsdl.ver}.setup.webservices.netsuite.com" package="com.netsuite.webservices.setup.customization"/>
+			<mapping namespace="urn:types.customization_${nsws-client-wsdl.ver}.setup.webservices.netsuite.com" package="com.netsuite.webservices.setup.customization.types"/>
+			<mapping namespace="urn:employees_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.employees"/>
+			<mapping namespace="urn:types.employees_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.employees.types"/>
+			<mapping namespace="urn:accounting_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.accounting"/>
+			<mapping namespace="urn:types.accounting_${nsws-client-wsdl.ver}.lists.webservices.netsuite.com" package="com.netsuite.webservices.lists.accounting.types"/>
+			<mapping namespace="urn:filecabinet_${nsws-client-wsdl.ver}.documents.webservices.netsuite.com" package="com.netsuite.webservices.documents.filecabinet"/>
+			<mapping namespace="urn:types.filecabinet_${nsws-client-wsdl.ver}.documents.webservices.netsuite.com" package="com.netsuite.webservices.documents.filecabinet.types"/>
+		</axis-wsdl2java>
+		<echo message="Compiling generated java sources"/>
+		<delete dir="${nsws-clientbld.dir}/build" failonerror="false"/>
+		<mkdir dir="${nsws-clientbld.dir}/build"/>
+		<javac srcdir="${nsws-clientbld.dir}/src" destdir="${nsws-clientbld.dir}/build" verbose="false" debug="on" fork="true" memoryMaximumSize="256m">
+			<classpath refid="nsws-client.classpath"/>
+		</javac>
+		<echo message="Overwriting ${nsws-client-jar.file}"/>
+		<jar destfile="${nsws-client-jar.file}" basedir="${nsws-clientbld.dir}/build"/>
+	</target>
+	<target name="clean.nsws-client-bld" description="Cleans out generated source and classes">
+		<delete dir="${nsws-clientbld.dir}"/>
+	</target>
+	<target name="nsws-client-axis.version" description="Reports the version of axis used">
+		<java classname="org.apache.axis.Version" failonerror="true" classpathref="nsws-client.classpath"/>
+	</target>
 </project>
