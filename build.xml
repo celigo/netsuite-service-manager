@@ -1,0 +1,25 @@
+<project name="NS Service Manager" basedir="." default="recycle.ns-service-manager-jar">	
+	
+	<path id="retroguard.classpath">
+		<fileset dir="." includes="retroguard.jar"/>
+	</path>
+	
+	<taskdef name="RetroGuardTask" classpathref="retroguard.classpath" classname="COM.rl.ant.RetroGuardTask"/> 
+
+	<!-- Build Axon -->
+	<property name="client-jar.file" location="lib/ns-service-manager.jar"/>
+	
+	<target name="recycle.ns-service-manager-jar" description="Generates Obfuscated NS Service Manager Jar">
+		<echo message="****************************"/>
+		<echo message=" Rebuilding ${client-jar.file}"/>
+		<echo message="****************************"/>
+		<jar destfile="temp.jar" basedir="build"/>
+		<RetroGuardTask
+    		infile="temp.jar" 
+	      	outfile="${client-jar.file}" 
+	      	rgsfile="obfuscate.rgs" 
+	      	logfile="retroguard.log"/>
+		<delete file="temp.jar" failonerror="false"/>
+	</target>
+	
+</project>
