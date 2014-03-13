@@ -7,6 +7,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.celigo.axon.service.netsuite.beans.AccountInfoDTO;
+
 /**
  * Maintain a pool of NetSuite Service Managers.
  * @author Celigo Technologies
@@ -33,12 +35,15 @@ public class NetSuiteServicePoolManager {
 	private String mailRecipientCC1;
 	private String mailRecipientCC2;
 	
-	private String endpointUrl = "https://webservices.netsuite.com/services/NetSuitePort_2012_1";
+	private String endpointUrl;
 	private boolean useRequestLevelCredentials = false;
 	
 	private NetSuiteCredential credential;
 	private ArrayBlockingQueue<NetSuiteServiceManager> freeServiceManagers;
 	private ArrayList<NetSuiteServiceManager> referenceServiceManagers;
+	
+	private boolean sandbox = false;
+	private boolean beta = false;
 	
 	private ReentrantReadWriteLock reInitializationLock = new ReentrantReadWriteLock();
 	
@@ -173,6 +178,31 @@ public class NetSuiteServicePoolManager {
 		return true;
 	}
 	
+	private AccountInfoDTO cachedAccountInfo = null;
+	private AccountInfoDTO getAccountInfo() throws NsException {
+		if (cachedAccountInfo != null) {
+			return cachedAccountInfo;
+		}
+		
+		AccountInfoDTO accountInfoTemp = null;
+		if (getCredential() != null) {
+			String account = null;
+			if (getCredential().getAccount() != null) {
+				account = getCredential().getAccount();
+			}
+			
+			accountInfoTemp = NetSuiteURLFinder.generateAccountInfo(isSandbox(), isBeta(), getCredential());
+			
+			if (accountInfoTemp != null && account != null) {
+				accountInfoTemp.setEndPointUrl(accountInfoTemp.getEndPointUrl() + "?c=" + account);
+			}
+			log.info(accountInfoTemp);
+		}
+		
+		cachedAccountInfo = accountInfoTemp;
+		return accountInfoTemp;
+	}
+	
 	private ArrayBlockingQueue<NetSuiteServiceManager> getFreeServiceManagers() {
 		return freeServiceManagers;
 	}
@@ -193,7 +223,15 @@ public class NetSuiteServicePoolManager {
 		this.bodyFieldsOnly = bodyFieldsOnly;
 	}
 
-	public String getEndpointUrl() {
+	private String getEndpointUrl() throws NsException {
+		if (endpointUrl != null) {
+			return endpointUrl;
+		}
+		
+		AccountInfoDTO accountInfoDTO = getAccountInfo();
+		if (accountInfoDTO != null) {
+			endpointUrl = accountInfoDTO.getEndPointUrl();
+		}
 		return endpointUrl;
 	}
 
@@ -324,7 +362,19 @@ public class NetSuiteServicePoolManager {
 		this.useRequestLevelCredentials = useRequestLevelCredentials;
 	}
 
+	public boolean isSandbox() {
+		return sandbox;
+	}
+
+	public void setSandbox(boolean sandbox) {
+		this.sandbox = sandbox;
+	}
+
+	public boolean isBeta() {
+		return beta;
+	}
+
+	public void setBeta(boolean beta) {
+		this.beta = beta;
+	}
 }
-
-
-
