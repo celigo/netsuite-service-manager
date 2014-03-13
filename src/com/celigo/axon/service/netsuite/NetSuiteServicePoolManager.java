@@ -29,12 +29,6 @@ public class NetSuiteServicePoolManager {
 	private int searchPageSize = 1000;	
 	private boolean bodyFieldsOnly = true;
 	
-	private String mailUser;
-	private String mailPassword;
-	private String mailRecipientTo;
-	private String mailRecipientCC1;
-	private String mailRecipientCC2;
-	
 	private String endpointUrl;
 	private boolean useRequestLevelCredentials = false;
 	
@@ -145,11 +139,6 @@ public class NetSuiteServicePoolManager {
 			svcMgr.setTimeout(getTimeout());
 			svcMgr.setUpdateRequestSize(getUpdateRequestSize());
 			svcMgr.setDeleteRequestSize(getDeleteRequestSize());
-			svcMgr.setMailPassword(getMailPassword());
-			svcMgr.setMailRecipientCC1(getMailRecipientCC1());
-			svcMgr.setMailRecipientCC2(getMailRecipientCC2());
-			svcMgr.setMailRecipientTo(getMailRecipientTo());
-			svcMgr.setMailUser(getMailUser());
 			svcMgr.setUseRequestLevelCredentials(isUseRequestLevelCredentials());
 			if (!isUseRequestLevelCredentials()) {
 				svcMgr.login();
@@ -312,46 +301,6 @@ public class NetSuiteServicePoolManager {
 	public void setCredential(NetSuiteCredential credential) {
 		loadCredentialProperties(credential);
 		this.credential = credential;
-	}
-
-	public String getMailUser() {
-		return mailUser;
-	}
-
-	public void setMailUser(String mailUser) {
-		this.mailUser = mailUser;
-	}
-
-	public String getMailPassword() {
-		return mailPassword;
-	}
-
-	public void setMailPassword(String mailPassword) {
-		this.mailPassword = mailPassword;
-	}
-
-	public String getMailRecipientTo() {
-		return mailRecipientTo;
-	}
-
-	public void setMailRecipientTo(String mailRecipientTo) {
-		this.mailRecipientTo = mailRecipientTo;
-	}
-
-	public String getMailRecipientCC1() {
-		return mailRecipientCC1;
-	}
-
-	public void setMailRecipientCC1(String mailRecipientCC1) {
-		this.mailRecipientCC1 = mailRecipientCC1;
-	}
-	
-	public String getMailRecipientCC2() {
-		return mailRecipientCC2;
-	}
-
-	public void setMailRecipientCC2(String mailRecipientCC2) {
-		this.mailRecipientCC2 = mailRecipientCC2;
 	}
 
 	public boolean isUseRequestLevelCredentials() {

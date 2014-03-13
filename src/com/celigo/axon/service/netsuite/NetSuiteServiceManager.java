@@ -5,14 +5,8 @@ import java.net.SocketException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.mail.Message;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.xml.rpc.soap.SOAPFaultException;
 import javax.xml.soap.SOAPException;
 
@@ -986,58 +980,7 @@ public class NetSuiteServiceManager {
 		return login(true);
 	}
 	
-	private String mailUser;
-	private String mailPassword;
-	private String mailRecipientTo;
-	private String mailRecipientCC1;
-	private String mailRecipientCC2;
-	
-	protected void handleFailedLogin(String email, String exceptionMessage) {
-		
-		if (getMailPassword() == null ||
-			getMailRecipientTo() == null ||
-			getMailUser() == null ||
-			endpointUrl == null ||
-			!endpointUrl.startsWith("https"))
-			return;
-		
-		if (exceptionMessage == null)
-			exceptionMessage = "";
-		
-		try {
-			Properties props = new Properties();
-
-			props.put("mail.transport.protocol", "smtps");
-			props.put("mail.smtps.host", "smtp.gmail.com");
-			props.put("mail.smtps.auth", "true");
-			props.put("mail.smtps.quitwait", "false");
-			
-			Session mailSession = Session.getDefaultInstance(props);
-			Transport transport = mailSession.getTransport();
-			
-			MimeMessage message = new MimeMessage(mailSession);
-			message.setSubject("Celigo Integrator Login Failed: " + email);
-			message.setContent(exceptionMessage, "text/plain");
-			
-			message.addRecipient(Message.RecipientType.TO, new InternetAddress(getMailRecipientTo()));
-			if (getMailRecipientCC1() != null)
-				message.addRecipient(Message.RecipientType.CC, new InternetAddress(getMailRecipientCC1()));
-			if (getMailRecipientCC2() != null)
-			message.addRecipient(Message.RecipientType.CC, new InternetAddress(getMailRecipientCC2()));
-			
-			transport.connect("smtp.gmail.com", 465, getMailUser(), getMailPassword());
-			
-			transport.sendMessage(message, message.getRecipients(Message.RecipientType.TO));
-			transport.sendMessage(message, message.getRecipients(Message.RecipientType.CC));
-			transport.close();
-		    
-		} catch (Exception e) {
-			log.error(e);
-		}
-	}
-	
 	private boolean loggedIn = false;
-	
 	private NetSuiteLoginResponse login(boolean relogin) throws NsException {	
 		
 		if (relogin)
@@ -1083,7 +1026,6 @@ public class NetSuiteServiceManager {
 				status = sessionResponse.getStatus();
 			
 			} catch (InvalidCredentialsFault f) {
-				handleFailedLogin(email, f.getFaultString());
 				throw new NsException(f.getFaultString());
 			} catch (Exception e) {
 				exceptionMessage = e.getMessage();
@@ -1101,9 +1043,10 @@ public class NetSuiteServiceManager {
 			if (status != null && status.getStatusDetail() != null && status.getStatusDetail().length > 0) {
 				message = message + " " + status.getStatusDetail()[0].getCode();
 				message = message + " " + status.getStatusDetail()[0].getMessage();
-			} else if (exceptionMessage != null)
+			} else if (exceptionMessage != null) {
 				message = message + " " + exceptionMessage;
-			handleFailedLogin(email, message);
+			}
+			
 			throw new NsException(message);
 		}
 		
@@ -1283,46 +1226,6 @@ public class NetSuiteServiceManager {
 
 	public Preferences getPreferences() {
 		return preferences;
-	}
-
-	public String getMailUser() {
-		return mailUser;
-	}
-
-	public void setMailUser(String mailUser) {
-		this.mailUser = mailUser;
-	}
-
-	public String getMailPassword() {
-		return mailPassword;
-	}
-
-	public void setMailPassword(String mailPassword) {
-		this.mailPassword = mailPassword;
-	}
-
-	public String getMailRecipientTo() {
-		return mailRecipientTo;
-	}
-
-	public void setMailRecipientTo(String mailRecipientTo) {
-		this.mailRecipientTo = mailRecipientTo;
-	}
-
-	public String getMailRecipientCC1() {
-		return mailRecipientCC1;
-	}
-
-	public void setMailRecipientCC1(String mailRecipientCC1) {
-		this.mailRecipientCC1 = mailRecipientCC1;
-	}
-	
-	public String getMailRecipientCC2() {
-		return mailRecipientCC2;
-	}
-
-	public void setMailRecipientCC2(String mailRecipientCC2) {
-		this.mailRecipientCC2 = mailRecipientCC2;
 	}
 
 	public boolean isUseRequestLevelCredentials() {
