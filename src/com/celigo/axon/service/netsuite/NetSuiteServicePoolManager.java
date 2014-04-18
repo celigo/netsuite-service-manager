@@ -126,15 +126,12 @@ public class NetSuiteServicePoolManager {
 		
 		for (int j=0; j<getCredential().getNumberOfSeats(); j++) {
 			NetSuiteServiceManager svcMgr = new NetSuiteServiceManager();
-			svcMgr.setAccount(getCredential().getAccount());
+			svcMgr.setNetSuiteCredential(getCredential());
 			svcMgr.setAddRequestSize(getAddRequestSize());
 			svcMgr.setBodyFieldsOnly(isBodyFieldsOnly());
-			svcMgr.setEmail(getCredential().getEmail());
 			svcMgr.setEndpointUrl(getEndpointUrl());
-			svcMgr.setPassword(getCredential().getPassword());
 			svcMgr.setRetryCount(getRetryCount());
 			svcMgr.setRetryInterval(getRetryInterval());
-			svcMgr.setRole(getCredential().getRoleId());
 			svcMgr.setSearchPageSize(getSearchPageSize());
 			svcMgr.setTimeout(getTimeout());
 			svcMgr.setUpdateRequestSize(getUpdateRequestSize());

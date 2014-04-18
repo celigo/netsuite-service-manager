@@ -5,6 +5,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.rpc.soap.SOAPFaultException;
@@ -17,6 +18,8 @@ import org.apache.commons.logging.LogFactory;
 import com.celigo.axon.service.netsuite.adaptors.GetCustomizationIdRequest;
 import com.celigo.axon.service.netsuite.adaptors.GetSelectValueRequestHelper;
 import com.celigo.axon.service.netsuite.adaptors.GetSelectValueResultHelper;
+import com.netledger.forpartners.encryption.NLrsa;
+import com.netledger.forpartners.encryption.Utils;
 import com.netsuite.webservices.platform.NetSuiteBindingStub;
 import com.netsuite.webservices.platform.NetSuitePortType;
 import com.netsuite.webservices.platform.NetSuiteServiceLocator;
@@ -38,6 +41,8 @@ import com.netsuite.webservices.platform.core.Record;
 import com.netsuite.webservices.platform.core.RecordRef;
 import com.netsuite.webservices.platform.core.SearchRecord;
 import com.netsuite.webservices.platform.core.SearchResult;
+import com.netsuite.webservices.platform.core.SsoCredentials;
+import com.netsuite.webservices.platform.core.SsoPassport;
 import com.netsuite.webservices.platform.core.Status;
 import com.netsuite.webservices.platform.core.StatusDetail;
 import com.netsuite.webservices.platform.faults.InvalidCredentialsFault;
@@ -73,10 +78,7 @@ public class NetSuiteServiceManager {
 
 	protected static transient Log log = LogFactory.getLog(NetSuiteServiceManager.class);
 
-	private String email;
-	private String password;
-	private String account;
-	private String role;
+	private NetSuiteCredential netSuiteCredential;
 	
 	private int retryCount = 3;
 	private int retriesBeforeLogin = 2;
@@ -213,6 +215,14 @@ public class NetSuiteServiceManager {
         return processRecordDeletesInBatchMode(baseRefs, new Exception().getStackTrace()[0].getMethodName());
     }
 
+    /**
+	 * 
+	 * @throws NsException
+	 */
+    public SessionResponse mapSso(SsoCredentials ssoCredentials) throws NsException {
+        return (SessionResponse)submitRobustly(ssoCredentials, new Exception().getStackTrace()[0].getMethodName());
+    }
+    
     /**
 	 * 
 	 * @throws NsException
@@ -735,11 +745,11 @@ public class NetSuiteServiceManager {
 			} catch (Exception e) {throw new NsException(e.getMessage());} 
 			
 			Passport ppt = new Passport();
-			ppt.setAccount(account);
-			ppt.setEmail(email);
-			ppt.setPassword(password);
+			ppt.setAccount(getNetSuiteCredential().getAccount());
+			ppt.setEmail(getNetSuiteCredential().getEmail());
+			ppt.setPassword(getNetSuiteCredential().getPassword());
 			RecordRef rr = new RecordRef();
-			rr.setInternalId(role);
+			rr.setInternalId(getNetSuiteCredential().getRoleId());
 			ppt.setRole(rr);
 
 			SOAPHeaderElement passportHeader = new SOAPHeaderElement("urn:messages.platform.webservices.netsuite.com", "passport");
@@ -998,23 +1008,42 @@ public class NetSuiteServiceManager {
 		} catch (Exception e) {throw new NsException(e.getMessage());} 
 		
 		Passport ppt = new Passport();
-		ppt.setAccount(account);
-		ppt.setEmail(email);
-		ppt.setPassword(password);
+		SsoPassport ssoPassport = new SsoPassport();
 		RecordRef rr = new RecordRef();
-		rr.setInternalId(role);
-		ppt.setRole(rr);
-
-		log.debug("Logging into NetSuite [Username=" + ppt.getEmail()
-				+ ", Account=" + ppt.getAccount() + ", RoleId="
-				+ ppt.getRole().getInternalId() + "]");
+		rr.setInternalId(getNetSuiteCredential().getRoleId());
+		
+		if (!getNetSuiteCredential().isUseSsoLogin()) {
+			ppt.setAccount(getNetSuiteCredential().getAccount());
+			ppt.setEmail(getNetSuiteCredential().getEmail());
+			ppt.setPassword(getNetSuiteCredential().getPassword());
+			ppt.setRole(rr);
+			log.debug("Logging into NetSuite [Username=" + ppt.getEmail() + ", Account=" + ppt.getAccount() + ", RoleId=" + ppt.getRole().getInternalId() + "]");
+		} else {
+			ssoPassport.setPartnerId(getNetSuiteCredential().getPartnerId());
+			String time = Long.toString(Calendar.getInstance().getTimeInMillis());
+			String unencryptedToken = getNetSuiteCredential().getCompanyId() + " " + getNetSuiteCredential().getUserId() + " " + time;
+			String authenticationToken = null;
+			try {
+				byte[] privKeyBytes = Utils.fileNameToByteArray(getNetSuiteCredential().getPrivateKey());
+				byte[] encryptedData = NLrsa.privateEncrypt(unencryptedToken.getBytes(), privKeyBytes);
+				authenticationToken = Utils.byteArrayToHexString(encryptedData, false);
+			} catch (Exception e) {
+				throw new NsException("Unable to generate authentication token", e);
+			}
+			ssoPassport.setAuthenticationToken(authenticationToken);
+			log.debug("Logging (SSO) into NetSuite [Company=" + getNetSuiteCredential().getCompanyId() + ", User=" + getNetSuiteCredential().getUserId() + "]");
+		}
 		
 		Status status = null;
 		SessionResponse sessionResponse = null;
 		String exceptionMessage = null;
 		for (int i=0; i<getRetryCount(); i++) {
 			try {
-				sessionResponse = nsPort.login(ppt);
+				if (!getNetSuiteCredential().isUseSsoLogin()) {
+					sessionResponse = nsPort.login(ppt);
+				} else {
+					sessionResponse = nsPort.ssoLogin(ssoPassport);
+				}
 				status = sessionResponse.getStatus();
 			
 			} catch (InvalidCredentialsFault f) {
@@ -1061,33 +1090,13 @@ public class NetSuiteServiceManager {
 		
 		return new NetSuiteLoginResponse(sessionResponse, ((NetSuiteBindingStub)nsPort).getResponseHeaders());
 	}
-    
-	/**
-	 * Sets the account that this object establishes a session with.
-	 */
-	public void setAccount(String account) {
-		this.account = account;
-	}
-	
-	/**
-	 * Gets the account that this object is associated with.
-	 */
-	public String getAccount() {
-		return account;
+
+	public NetSuiteCredential getNetSuiteCredential() {
+		return netSuiteCredential;
 	}
 
-	/**
-	 * Sets the email that this object uses to establish a session.
-	 */
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	/**
-	 * Sets the password that this object uses to establish a session.
-	 */
-	public void setPassword(String password) {
-		this.password = password;
+	public void setNetSuiteCredential(NetSuiteCredential netSuiteCredential) {
+		this.netSuiteCredential = netSuiteCredential;
 	}
 
 	private int getRetryCount() {
@@ -1110,13 +1119,6 @@ public class NetSuiteServiceManager {
 	 */
 	public void setRetryInterval(int retryInterval) {
 		this.retryInterval = retryInterval;
-	}
-
-	/**
-	 * Sets the role that this object uses to establish a session.
-	 */
-	public void setRole(String role) {
-		this.role = role;
 	}
 
 	private int getTimeout() {

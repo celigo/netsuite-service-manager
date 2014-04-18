@@ -9,6 +9,12 @@ public class NetSuiteCredential {
 	private int numberOfSeats = 1;
 	private String id;
 	
+	private String companyId;
+	private String userId;
+	private String partnerId;
+	private String privateKey; //Der format
+	private boolean useSsoLogin = false;
+	
 	public NetSuiteCredential() {};
 	
 	public NetSuiteCredential(String email, String password, String account, String roleId) {
@@ -65,6 +71,46 @@ public class NetSuiteCredential {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getPartnerId() {
+		return partnerId;
+	}
+
+	public void setPartnerId(String partnerId) {
+		this.partnerId = partnerId;
+	}
+
+	public String getPrivateKey() {
+		return privateKey;
+	}
+
+	public void setPrivateKey(String privateKey) {
+		this.privateKey = privateKey;
+	}
+
+	public boolean isUseSsoLogin() {
+		return useSsoLogin;
+	}
+
+	public void setUseSsoLogin(boolean useSsoLogin) {
+		this.useSsoLogin = useSsoLogin;
 	}
 	
 }

@@ -20,9 +20,11 @@ import com.netsuite.webservices.platform.core.GetItemAvailabilityResult;
 import com.netsuite.webservices.platform.core.InitializeRecord;
 import com.netsuite.webservices.platform.core.ItemAvailabilityFilter;
 import com.netsuite.webservices.platform.core.Record;
+import com.netsuite.webservices.platform.core.SsoCredentials;
 import com.netsuite.webservices.platform.messages.AsyncResult;
 import com.netsuite.webservices.platform.messages.ReadResponse;
 import com.netsuite.webservices.platform.messages.ReadResponseList;
+import com.netsuite.webservices.platform.messages.SessionResponse;
 import com.netsuite.webservices.platform.messages.WriteResponse;
 import com.netsuite.webservices.platform.messages.WriteResponseList;
 
@@ -157,6 +159,19 @@ public class NetSuiteServicePool {
     	}
     }
 
+    /**
+	 * 
+	 * @throws NsException
+	 */
+    public SessionResponse mapSso(SsoCredentials ssoCredentials) throws NsException {
+    	NetSuiteServiceManager svcMan = getServicePoolManager().getServiceManager();
+    	try {
+    		return svcMan.mapSso(ssoCredentials);
+    	} finally {
+    		getServicePoolManager().releaseServiceManager(svcMan);
+    	}
+	}
+    
     /**
 	 * 
 	 * @throws NsException
