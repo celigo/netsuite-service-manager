@@ -23,7 +23,6 @@ import com.netsuite.webservices.platform.NetSuiteServiceLocator;
 import com.netsuite.webservices.platform.core.AsyncStatusResult;
 import com.netsuite.webservices.platform.core.AttachReference;
 import com.netsuite.webservices.platform.core.BaseRef;
-import com.netsuite.webservices.platform.core.ChangePasswordOrEmailCredentials;
 import com.netsuite.webservices.platform.core.CustomizationType;
 import com.netsuite.webservices.platform.core.GetAllRecord;
 import com.netsuite.webservices.platform.core.GetAllResult;
@@ -300,6 +299,7 @@ public class NetSuiteServiceManager {
         return (SearchResult)submitRobustly(new Integer(i), new Exception().getStackTrace()[0].getMethodName(), preferences, null);
     }
 
+    
     /**
 	 * 
 	 * @throws NsException
@@ -419,14 +419,6 @@ public class NetSuiteServiceManager {
         getSelectValueResultHelper.setGetSelectValueResult(getSelectValueResult);
         
         return getSelectValueResultHelper;
-    }
-
-    /**
-	 * 
-	 * @throws NsException
-	 */
-    public SessionResponse changePasswordOrEmail(ChangePasswordOrEmailCredentials changePasswordOrEmailCredentials) throws NsException {
-        return (SessionResponse)submitRobustly(changePasswordOrEmailCredentials, new Exception().getStackTrace()[0].getMethodName());
     }
 
     /**

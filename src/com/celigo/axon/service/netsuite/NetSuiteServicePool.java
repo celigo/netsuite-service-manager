@@ -11,7 +11,6 @@ import com.celigo.axon.service.netsuite.adaptors.GetSelectValueResultHelper;
 import com.netsuite.webservices.platform.core.AsyncStatusResult;
 import com.netsuite.webservices.platform.core.AttachReference;
 import com.netsuite.webservices.platform.core.BaseRef;
-import com.netsuite.webservices.platform.core.ChangePasswordOrEmailCredentials;
 import com.netsuite.webservices.platform.core.GetAllRecord;
 import com.netsuite.webservices.platform.core.GetAllResult;
 import com.netsuite.webservices.platform.core.GetCustomizationIdResult;
@@ -24,7 +23,6 @@ import com.netsuite.webservices.platform.core.Record;
 import com.netsuite.webservices.platform.messages.AsyncResult;
 import com.netsuite.webservices.platform.messages.ReadResponse;
 import com.netsuite.webservices.platform.messages.ReadResponseList;
-import com.netsuite.webservices.platform.messages.SessionResponse;
 import com.netsuite.webservices.platform.messages.WriteResponse;
 import com.netsuite.webservices.platform.messages.WriteResponseList;
 
@@ -36,7 +34,7 @@ import com.netsuite.webservices.platform.messages.WriteResponseList;
  * provide the ability to submit requests across multiple service managers.  This class is very <br>
  * useful for applications that need more than one NetSuite web services session.  Stateless requests <br>
  * can be made directly against the pool.  State-full requests can be made by first allocating an <br>
- * available NetSuiteServiceManager instance—don’t forget to release it when done.
+ * available NetSuiteServiceManager instanceï¿½donï¿½t forget to release it when done.
  * 
  * @author Celigo Technologies
  */
@@ -263,19 +261,6 @@ public class NetSuiteServicePool {
     	NetSuiteServiceManager svcMan = getServicePoolManager().getServiceManager();
     	try {
     		return svcMan.getSelectValue(getSelectValueRequestHelper);
-    	} finally {
-    		getServicePoolManager().releaseServiceManager(svcMan);
-    	}
-	}
-
-    /**
-	 * 
-	 * @throws NsException
-	 */
-    public SessionResponse changePasswordOrEmail(ChangePasswordOrEmailCredentials changePasswordOrEmailCredentials) throws NsException {
-    	NetSuiteServiceManager svcMan = getServicePoolManager().getServiceManager();
-    	try {
-    		return svcMan.changePasswordOrEmail(changePasswordOrEmailCredentials);
     	} finally {
     		getServicePoolManager().releaseServiceManager(svcMan);
     	}

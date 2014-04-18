@@ -17,7 +17,7 @@ import com.google.gson.Gson;
 public class NetSuiteURLFinder {
 
 	protected static transient Log log = LogFactory.getLog(NetSuiteURLFinder.class);
-	public static final String NS_ENDPOINT = "NetSuitePort_2012_1";
+	public static final String NS_ENDPOINT = "NetSuitePort_2013_2";
 	
 	public static AccountInfoDTO generateAccountInfo(boolean isSandbox, boolean isBeta, NetSuiteCredential credential) {
 		return generateAccountInfo(isSandbox, isBeta, credential.getEmail(), 
