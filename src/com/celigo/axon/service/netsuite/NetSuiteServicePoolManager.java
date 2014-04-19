@@ -1,5 +1,6 @@
 package com.celigo.axon.service.netsuite;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -7,7 +8,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.celigo.axon.service.netsuite.beans.AccountInfoDTO;
+import com.netsuite.webservices.platform.NetSuitePortType;
+import com.netsuite.webservices.platform.NetSuiteServiceLocator;
+import com.netsuite.webservices.platform.core.DataCenterUrls;
 
 /**
  * Maintain a pool of NetSuite Service Managers.
@@ -16,9 +19,10 @@ import com.celigo.axon.service.netsuite.beans.AccountInfoDTO;
 public class NetSuiteServicePoolManager {
 	
 	private static ArrayList<NetSuiteServicePoolManager> managers = new ArrayList<NetSuiteServicePoolManager>();
-	
 	protected static transient Log log = LogFactory.getLog(NetSuiteServicePoolManager.class);
-	
+
+	public static final String NS_ENDPOINT = "NetSuitePort_2013_2";
+
 	private int retryCount = 6;
 	private int retryInterval = 5;
 	private int timeout = 10;
@@ -164,29 +168,35 @@ public class NetSuiteServicePoolManager {
 		return true;
 	}
 	
-	private AccountInfoDTO cachedAccountInfo = null;
-	private AccountInfoDTO getAccountInfo() throws NsException {
-		if (cachedAccountInfo != null) {
-			return cachedAccountInfo;
+	private String cachedWSDomain = null;
+	private String generateEndPointUrl() throws NsException {
+		if (cachedWSDomain != null) {
+			return cachedWSDomain;
 		}
 		
-		AccountInfoDTO accountInfoTemp = null;
-		if (getCredential() != null) {
-			String account = null;
-			if (getCredential().getAccount() != null) {
-				account = getCredential().getAccount();
-			}
-			
-			accountInfoTemp = NetSuiteURLFinder.generateAccountInfo(isSandbox(), isBeta(), getCredential());
-			
-			if (accountInfoTemp != null && account != null) {
-				accountInfoTemp.setEndPointUrl(accountInfoTemp.getEndPointUrl() + "?c=" + account);
-			}
-			log.info(accountInfoTemp);
+		String servicesEndPoint = "/services/" + NS_ENDPOINT;
+		String defaultDomain = "https://webservices.netsuite.com";
+		if (isSandbox()) {
+			defaultDomain = "https://webservices.sandbox.netsuite.com";
+		} else if (isBeta()) {
+			defaultDomain = "https://webservices.beta.netsuite.com";
 		}
 		
-		cachedAccountInfo = accountInfoTemp;
-		return accountInfoTemp;
+		NetSuiteServiceLocator nss = new NetSuiteServiceLocator();
+		String wsDomain = null;
+		try {
+			NetSuitePortType nsPort = nss.getNetSuitePort(new URL(defaultDomain + servicesEndPoint));
+			DataCenterUrls urls = nsPort.getDataCenterUrls(credential.getAccount()).getDataCenterUrls();
+			wsDomain = urls.getWebservicesDomain();
+		} catch (Exception e) {
+			throw new NsException("Unable to determine WS Domain", e);
+		}
+		
+		String wsDomainTemp = wsDomain + servicesEndPoint;
+		log.info("Found WS Domain - " + wsDomainTemp);
+		
+		cachedWSDomain = wsDomainTemp;
+		return wsDomainTemp;
 	}
 	
 	private ArrayBlockingQueue<NetSuiteServiceManager> getFreeServiceManagers() {
@@ -214,10 +224,7 @@ public class NetSuiteServicePoolManager {
 			return endpointUrl;
 		}
 		
-		AccountInfoDTO accountInfoDTO = getAccountInfo();
-		if (accountInfoDTO != null) {
-			endpointUrl = accountInfoDTO.getEndPointUrl();
-		}
+		endpointUrl = generateEndPointUrl();
 		return endpointUrl;
 	}
 

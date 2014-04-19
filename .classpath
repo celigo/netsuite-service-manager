@@ -20,7 +20,6 @@
 	<classpathentry kind="lib" path="lib/saaj.jar"/>
 	<classpathentry kind="lib" path="lib/wsdl4j.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/gson-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ssov2.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
