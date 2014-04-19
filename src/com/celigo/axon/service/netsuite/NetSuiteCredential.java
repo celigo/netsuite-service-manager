@@ -12,7 +12,7 @@ public class NetSuiteCredential {
 	private String companyId;
 	private String userId;
 	private String partnerId;
-	private String privateKey; //Der format
+	private String privateKey; // path to private key in der format
 	private boolean useSsoLogin = false;
 	
 	public NetSuiteCredential() {};
