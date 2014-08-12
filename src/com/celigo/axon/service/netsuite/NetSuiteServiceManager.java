@@ -816,6 +816,12 @@ public class NetSuiteServiceManager {
 	                    } catch (Exception e) {
 	                        throw new InvocationTargetException(e);
 	                    }
+	                } else if (method.equals("getSelectValue")) {
+	                    try {
+	                    	res = nsPort.getSelectValue(((GetSelectValueRequestHelper)arg).getGetSelectValueField(), ((GetSelectValueRequestHelper)arg).getPageIndex());
+	                    } catch (Exception e) {
+	                        throw new InvocationTargetException(e);
+	                    }
 	                } else {
 	                    if (argClass != null)
 	                        res = nsPort.getClass().getMethod(method, new Class[]{argClass}).invoke(nsPort, new Object[]{arg});
