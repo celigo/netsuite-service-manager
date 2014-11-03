@@ -33,6 +33,8 @@ import com.netsuite.webservices.platform.core.GetCustomizationIdResult;
 import com.netsuite.webservices.platform.core.GetDeletedFilter;
 import com.netsuite.webservices.platform.core.GetDeletedResult;
 import com.netsuite.webservices.platform.core.GetItemAvailabilityResult;
+import com.netsuite.webservices.platform.core.GetSavedSearchRecord;
+import com.netsuite.webservices.platform.core.GetSavedSearchResult;
 import com.netsuite.webservices.platform.core.GetSelectValueResult;
 import com.netsuite.webservices.platform.core.InitializeRecord;
 import com.netsuite.webservices.platform.core.ItemAvailabilityFilter;
@@ -437,6 +439,14 @@ public class NetSuiteServiceManager {
 	 */
     public GetCustomizationIdResult getCustomizationId(GetCustomizationIdRequest getCustomizationIdRequest) throws NsException {
     	return (GetCustomizationIdResult)submitRobustly(getCustomizationIdRequest, new Exception().getStackTrace()[0].getMethodName());
+    }
+    
+    /**
+	 * 
+	 * @throws NsException
+	 */
+    public GetSavedSearchResult getSavedSearch(GetSavedSearchRecord getSavedSearchRecord) throws NsException {
+    	return (GetSavedSearchResult)submitRobustly(getSavedSearchRecord, new Exception().getStackTrace()[0].getMethodName());
     }
 
     /**

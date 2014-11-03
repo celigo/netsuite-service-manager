@@ -586,7 +586,7 @@
             <fault name="ExceededRequestSizeFault" message="tns:ExceededRequestSizeFault"/>
             <fault name="UnexpectedErrorFault" message="tns:UnexpectedErrorFault"/>
         </operation>
- <!--       <operation name="getSavedSearch">
+        <operation name="getSavedSearch">
             <input name="getSavedSearchRequest" message="tns:getSavedSearchRequest"/>
             <output name="getSavedSearchResponse" message="tns:getSavedSearchResponse"/>
             <fault name="InvalidSessionFault" message="tns:InvalidSessionFault"/>
@@ -597,7 +597,7 @@
             <fault name="ExceededRequestSizeFault" message="tns:ExceededRequestSizeFault"/>
             <fault name="UnexpectedErrorFault" message="tns:UnexpectedErrorFault"/>
         </operation>
-  -->      <operation name="getCustomizationId">
+        <operation name="getCustomizationId">
             <input name="getCustomizationIdRequest" message="tns:getCustomizationIdRequest"/>
             <output name="getCustomizationIdResponse" message="tns:getCustomizationIdResponse"/>
             <fault name="InvalidSessionFault" message="tns:InvalidSessionFault"/>
@@ -1539,7 +1539,7 @@
                 <soap:fault name="UnexpectedErrorFault" use="literal"/>
             </fault>
         </operation>
-<!--        <operation name="getSavedSearch">
+        <operation name="getSavedSearch">
             <soap:operation soapAction="getSavedSearch"/>
             <input name="getSavedSearchRequest">
                 <soap:header message="tns:headers" part="passport" use="literal"/>
@@ -1574,7 +1574,7 @@
                 <soap:fault name="UnexpectedErrorFault" use="literal"/>
             </fault>
         </operation>
--->        <operation name="getCustomizationId">
+        <operation name="getCustomizationId">
             <soap:operation soapAction="getCustomizationId"/>
             <input name="getCustomizationIdRequest">
                 <soap:header message="tns:headers" part="passport" use="literal"/>
