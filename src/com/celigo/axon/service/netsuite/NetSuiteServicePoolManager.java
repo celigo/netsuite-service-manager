@@ -43,6 +43,7 @@ public class NetSuiteServicePoolManager {
 	private boolean sandbox = false;
 	private boolean beta = false;
 	
+	private String leadingPhaseVersion;
 	private ReentrantReadWriteLock reInitializationLock = new ReentrantReadWriteLock();
 	
 	public NetSuiteServicePoolManager() {
@@ -141,6 +142,8 @@ public class NetSuiteServicePoolManager {
 			svcMgr.setUpdateRequestSize(getUpdateRequestSize());
 			svcMgr.setDeleteRequestSize(getDeleteRequestSize());
 			svcMgr.setUseRequestLevelCredentials(isUseRequestLevelCredentials());
+			svcMgr.setLeadingPhaseVersion(getLeadingPhaseVersion());
+			
 			if (!isUseRequestLevelCredentials()) {
 				svcMgr.login();
 			}
@@ -330,4 +333,14 @@ public class NetSuiteServicePoolManager {
 	public void setBeta(boolean beta) {
 		this.beta = beta;
 	}
+
+	public String getLeadingPhaseVersion() {
+		return leadingPhaseVersion;
+	}
+
+	public void setLeadingPhaseVersion(String leadingPhaseVersion) {
+		this.leadingPhaseVersion = leadingPhaseVersion;
+	}
+	
+	
 }

@@ -49,6 +49,7 @@ import com.netsuite.webservices.platform.core.Status;
 import com.netsuite.webservices.platform.core.StatusDetail;
 import com.netsuite.webservices.platform.faults.InvalidCredentialsFault;
 import com.netsuite.webservices.platform.faults.InvalidSessionFault;
+import com.netsuite.webservices.platform.faults.UnexpectedErrorFault;
 import com.netsuite.webservices.platform.faults.types.StatusDetailCodeType;
 import com.netsuite.webservices.platform.messages.AsyncResult;
 import com.netsuite.webservices.platform.messages.Preferences;
@@ -106,7 +107,7 @@ public class NetSuiteServiceManager {
 	private SearchPreferences searchPreferences;
 	private Preferences preferences;
 	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-	
+	private String leadingPhaseVersion;
 	
 	public NetSuiteLoginResponse login() throws NsException {
 		getLock().writeLock().lock();
@@ -1033,7 +1034,8 @@ public class NetSuiteServiceManager {
 			ppt.setEmail(getNetSuiteCredential().getEmail());
 			ppt.setPassword(getNetSuiteCredential().getPassword());
 			ppt.setRole(rr);
-			log.debug("Logging into NetSuite [Username=" + ppt.getEmail() + ", Account=" + ppt.getAccount() + ", RoleId=" + ppt.getRole().getInternalId() + "]");
+			
+			log.debug("Passport for NetSuite [Username=" + ppt.getEmail() + ", Account=" + ppt.getAccount() + ", RoleId=" + ppt.getRole().getInternalId() + "]");
 		} else {
 			ssoPassport.setPartnerId(getNetSuiteCredential().getPartnerId());
 			String time = Long.toString(Calendar.getInstance().getTimeInMillis());
@@ -1047,7 +1049,7 @@ public class NetSuiteServiceManager {
 				throw new NsException("Unable to generate authentication token", e);
 			}
 			ssoPassport.setAuthenticationToken(authenticationToken);
-			log.debug("Logging (SSO) into NetSuite [Company=" + getNetSuiteCredential().getCompanyId() + ", User=" + getNetSuiteCredential().getUserId() + "]");
+			log.debug("SSO Passport for NetSuite [Company=" + getNetSuiteCredential().getCompanyId() + ", User=" + getNetSuiteCredential().getUserId() + "]");
 		}
 		
 		Status status = null;
@@ -1056,14 +1058,36 @@ public class NetSuiteServiceManager {
 		for (int i=0; i<getRetryCount(); i++) {
 			try {
 				if (!getNetSuiteCredential().isUseSsoLogin()) {
+					log.debug("Logging into NetSuite [Username=" + ppt.getEmail() + ", Account=" + ppt.getAccount() + ", RoleId=" + ppt.getRole().getInternalId() + "]");
 					sessionResponse = nsPort.login(ppt);
 				} else {
+					log.debug("Logging (SSO) into NetSuite [Company=" + getNetSuiteCredential().getCompanyId() + ", User=" + getNetSuiteCredential().getUserId() + "]");
 					sessionResponse = nsPort.ssoLogin(ssoPassport);
 				}
 				status = sessionResponse.getStatus();
 			
 			} catch (InvalidCredentialsFault f) {
 				throw new NsException(f.getFaultString());
+			} catch (UnexpectedErrorFault uef) {
+				log.info("Login Failed with Exception. " + uef.getFaultString());
+				
+				// NetSuite Leading accounts that are upgraded in Release Preview need an extra cookie with the new version
+				// See NetSuite Support Case #2235289 (Defect#335277)
+				if (this.getNetSuiteCredential().getAccount().startsWith("TSTDRV") && this.getLeadingPhaseVersion() != null) {
+					log.info("Setting Cookie for defect #335277 to NS_VER=" + this.getLeadingPhaseVersion());
+					
+					try {
+						
+						nss = new NetSuiteServiceLocator();
+						nss.setMaintainSession(true);
+						
+						nsPort = nss.getNetSuitePort(new URL(endpointUrl));
+						org.apache.axis.client.Stub st = (org.apache.axis.client.Stub)nsPort;
+						st._setProperty("Cookie", "NS_VER=" + this.getLeadingPhaseVersion());
+					} catch (Exception e) {throw new NsException(e.getMessage());} 
+				}
+				
+				exceptionMessage = uef.getFaultString();
 			} catch (Exception e) {
 				exceptionMessage = e.getMessage();
 				log.debug("Login Failed with Exception. " + e.getMessage());
@@ -1244,6 +1268,14 @@ public class NetSuiteServiceManager {
 
 	public void setUseRequestLevelCredentials(boolean useRequestLevelCredentials) {
 		this.useRequestLevelCredentials = useRequestLevelCredentials;
+	}
+
+	public String getLeadingPhaseVersion() {
+		return leadingPhaseVersion;
+	}
+
+	public void setLeadingPhaseVersion(String leadingPhaseVersion) {
+		this.leadingPhaseVersion = leadingPhaseVersion;
 	}
 
 }
