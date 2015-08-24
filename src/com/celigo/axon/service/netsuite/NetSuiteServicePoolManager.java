@@ -43,7 +43,7 @@ public class NetSuiteServicePoolManager {
 	private boolean sandbox = false;
 	private boolean beta = false;
 	
-	private String leadingPhaseVersion;
+	private String specialCookiePhaseVersion;
 	private ReentrantReadWriteLock reInitializationLock = new ReentrantReadWriteLock();
 	
 	public NetSuiteServicePoolManager() {
@@ -142,7 +142,7 @@ public class NetSuiteServicePoolManager {
 			svcMgr.setUpdateRequestSize(getUpdateRequestSize());
 			svcMgr.setDeleteRequestSize(getDeleteRequestSize());
 			svcMgr.setUseRequestLevelCredentials(isUseRequestLevelCredentials());
-			svcMgr.setLeadingPhaseVersion(getLeadingPhaseVersion());
+			svcMgr.setSpecialCookiePhaseVersion(getSpecialCookiePhaseVersion());
 			
 			if (!isUseRequestLevelCredentials()) {
 				svcMgr.login();
@@ -334,13 +334,13 @@ public class NetSuiteServicePoolManager {
 		this.beta = beta;
 	}
 
-	public String getLeadingPhaseVersion() {
-		return leadingPhaseVersion;
+	public String getSpecialCookiePhaseVersion() {
+		return specialCookiePhaseVersion;
 	}
 
-	public void setLeadingPhaseVersion(String leadingPhaseVersion) {
-		this.leadingPhaseVersion = leadingPhaseVersion;
+	public void setSpecialCookiePhaseVersion(String specialCookiePhaseVersion) {
+		this.specialCookiePhaseVersion = specialCookiePhaseVersion;
 	}
-	
+
 	
 }

@@ -107,7 +107,9 @@ public class NetSuiteServiceManager {
 	private SearchPreferences searchPreferences;
 	private Preferences preferences;
 	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-	private String leadingPhaseVersion;
+	
+	//YEAR.2.0 during the initial part of the phase. YEAR.1.0 during the final part of the phase
+	private String specialCookiePhaseVersion;
 	
 	public NetSuiteLoginResponse login() throws NsException {
 		getLock().writeLock().lock();
@@ -1073,8 +1075,8 @@ public class NetSuiteServiceManager {
 				
 				// NetSuite Leading accounts that are upgraded in Release Preview need an extra cookie with the new version
 				// See NetSuite Support Case #2235289 (Defect#335277)
-				if (this.getNetSuiteCredential().getAccount().startsWith("TSTDRV") && this.getLeadingPhaseVersion() != null) {
-					log.info("Setting Cookie for defect #335277 to NS_VER=" + this.getLeadingPhaseVersion());
+				if (this.getNetSuiteCredential().getAccount().startsWith("TSTDRV") && this.getSpecialCookiePhaseVersion() != null) {
+					log.info("Setting Cookie for defect #335277 to NS_VER=" + this.getSpecialCookiePhaseVersion());
 					
 					try {
 						
@@ -1083,7 +1085,7 @@ public class NetSuiteServiceManager {
 						
 						nsPort = nss.getNetSuitePort(new URL(endpointUrl));
 						org.apache.axis.client.Stub st = (org.apache.axis.client.Stub)nsPort;
-						st._setProperty("Cookie", "NS_VER=" + this.getLeadingPhaseVersion());
+						st._setProperty("Cookie", "NS_VER=" + this.getSpecialCookiePhaseVersion());
 					} catch (Exception e) {throw new NsException(e.getMessage());} 
 				}
 				
@@ -1270,12 +1272,12 @@ public class NetSuiteServiceManager {
 		this.useRequestLevelCredentials = useRequestLevelCredentials;
 	}
 
-	public String getLeadingPhaseVersion() {
-		return leadingPhaseVersion;
+	public String getSpecialCookiePhaseVersion() {
+		return specialCookiePhaseVersion;
 	}
 
-	public void setLeadingPhaseVersion(String leadingPhaseVersion) {
-		this.leadingPhaseVersion = leadingPhaseVersion;
+	public void setSpecialCookiePhaseVersion(String specialCookiePhaseVersion) {
+		this.specialCookiePhaseVersion = specialCookiePhaseVersion;
 	}
 
 }
