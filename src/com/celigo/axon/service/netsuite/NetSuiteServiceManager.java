@@ -1054,6 +1054,11 @@ public class NetSuiteServiceManager {
 			log.debug("SSO Passport for NetSuite [Company=" + getNetSuiteCredential().getCompanyId() + ", User=" + getNetSuiteCredential().getUserId() + "]");
 		}
 		
+		// Another workaround for NetSuite Support Case #2235289 (Defect#335277)
+		// After this the NS_VER cookie is no longer needed
+		((org.apache.axis.client.Stub) nsPort).setHeader("urn:messages.platform.webservices.netsuite.com",
+				"account", getNetSuiteCredential().getAccount());
+				
 		Status status = null;
 		SessionResponse sessionResponse = null;
 		String exceptionMessage = null;
