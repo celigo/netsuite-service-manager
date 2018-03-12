@@ -26,4 +26,5 @@ NetSuite Suitetalk for Java Applications.
 	ReadResponse readResponse = netSuiteServicePool.get(recordRef);
 	Contact contact = (Contact) readResponse.getRecord();
 	log.info(contact.getFirstName());
+
 ```
