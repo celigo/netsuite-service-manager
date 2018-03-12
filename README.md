@@ -11,7 +11,7 @@ NetSuite Suitetalk for Java Applications.
 	netSuiteCredential.setPartnerId("partner_id"); // Set for sso login
 	netSuiteCredential.setPrivateKey("private_key"); // Set for sso login
 	netSuiteCredential.setUseSsoLogin(false); // Set to true if using SSO Login
-	
+ 	
 	NetSuiteServicePoolManager netSuiteServicePoolManager = new NetSuiteServicePoolManager();
 	netSuiteServicePoolManager.setCredential(netSuiteCredential);
 //	netSuiteServicePoolManager.setUseRequestLevelCredentials(false); // Set to true if using request level credentials
